@@ -9,7 +9,7 @@ This is a adapter for GitHub's [Hubot](https://github.com/github/hubot)
   2. Create yor own hubot
   3. `npm install hubot-tlkio --save`
   4. Set the `HUBOT_TLKIO_CHANNEL` environment variable to the channel (**only one at the moment**)
-  5. Start your bot `
+  5. Start your bot `bin/hubot -a tlkio`
 
 ## Customize
 
