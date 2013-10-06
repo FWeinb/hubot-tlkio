@@ -1,12 +1,13 @@
-TlkioClient  = require './tlkio-client',
-Readline     = require 'readline'
+TlkioClient  = require 'tlkio-client',
 
 {Adapter,Robot,TextMessage,EnterMessage,LeaveMessage, User} = require 'hubot'
 
 class TlkIo extends Adapter
   send: (envelope, strings...) ->
-    strings.forEach (str) =>
-      @client.say str
+    client = @clients[envelope.room] or null
+    if client?
+      strings.forEach (str) =>
+        client.say str
 
   emote: (envelope, strings...) ->
     @send envelope, "* #{str}" for str in strings
@@ -16,36 +17,48 @@ class TlkIo extends Adapter
     @send envelope, strings...
 
   run: ->
-    self = @
 
-    config =
-        channel :  process.env.HUBOT_TLKIO_CHANNEL
-        user :
-          nickname:   process.env.HUBOT_TLKIO_NICKNAME or @robot.name
-          avatar  :   process.env.HUBOT_TLKIO_AVATAR
+    # Store all clients ROOM => client
+    clients = {};
 
-    client = new TlkioClient config
+    rooms = process.env.HUBOT_TLKIO_ROOM.split ','
 
+    # Iterate all rooms and create clients
+    rooms.forEach (room) =>
+      if room isnt ''
+        config =
+            room : room
+            user :
+              nickname:   @robot.name
+              avatar  :   process.env.HUBOT_TLKIO_AVATAR
 
-    client.on 'online_participants', (users, guests_count) =>
-      users.forEach (user) =>
-        hubotUser = @robot.brain.userForId user.id, user
-        hubotUser.id   = user.id
-        hubotUser.name = user.name
+        client = new TlkioClient config
 
-    client.on 'textmessage', (message) =>
-      @.receive new TextMessage message.fromUser, message.text, message.id
+        client.on 'online_participants', (users, guests_count) =>
+          users.forEach (user) =>
+            hubotUser = @robot.brain.userForId user.id, user
+            hubotUser.id   = user.id
+            hubotUser.name = user.name
 
-    client.on 'user_joined', (user) =>
-      hubotUser = @robot.brain.userForId user.id, user
-      @.receive new EnterMessage user, null
+        hubotRegEx = new RegExp '^@'+@robot.name, 'i'
 
-    client.on 'user_left', (user) =>
-      hubotUser = @robot.brain.userForId user.id
-      @.receive new LeaveMessage hubotUser, null
+        client.on 'message', (message) =>
+          # Normalise text message '@hubot' => 'hubot:'
+          message.text = message.text.replace hubotRegEx, @robot.name+':'
+          @.receive new TextMessage message.fromUser, message.text, message.id
 
+        client.on 'user_joined', (user) =>
+          hubotUser = @robot.brain.userForId user.id, user
+          @.receive new EnterMessage user, null
 
-    @client = client;
+        client.on 'user_left', (user) =>
+          hubotUser = @robot.brain.userForId user.id
+          @.receive new LeaveMessage hubotUser, null
+
+        # Add this client to the clients
+        clients[room] = client
+
+    @clients = clients;
 
     @.emit 'connected'
 
