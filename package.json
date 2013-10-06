@@ -1,6 +1,6 @@
 {
   "name": "hubot-tlkio",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Hubot adapter for tlkio",
   "main": "./src/tlkio",
   "repository": "https://github.com/FWeinb/hubot-tlkio",
