@@ -1,13 +1,9 @@
 {
   "name": "hubot-tlkio",
-
-  "version": "0.0.1",
+  "version": "0.0.6",
   "description": "Hubot adapter for tlkio",
-
   "main": "./src/tlkio",
-
-  "repository" : "https://github.com/FWeinb/hubot-tlkio",
-
+  "repository": "https://github.com/FWeinb/hubot-tlkio",
   "keywords": [
     "hubot",
     "tlkio",
@@ -15,16 +11,13 @@
     "chat",
     "bot"
   ],
-
   "author": "Fabrice Weinberg",
-
   "license": "MIT",
-
   "dependencies": {
-    "q": "~0.9.7",
-    "request": "~2.27.0",
-    "websocket": "~1.0.8",
+    "tlkio-client": "~0.0.4"
+  },
+
+  "devDependencies" :{
     "coffee-script": "1.6.3"
   }
-
 }
